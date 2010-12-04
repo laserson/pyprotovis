@@ -348,9 +348,3 @@ names = {
 
 for name in names.iterkeys():
     names[name] = color(names[name])
-
-
-
-
-
-

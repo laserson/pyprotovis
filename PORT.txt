@@ -68,12 +68,12 @@ pv.Particle
 pv.Quadtree
 pv.Quadtree.Node
 pv.Rule
-pv.Scale
+pv.Scale                    # Finished.  All below will also be in Scale.py
 pv.Scale.linear
 pv.Scale.log
 pv.Scale.ordinal
 pv.Scale.quantile
-pv.Scale.quantitative
+pv.Scale.quantitative       # started...in Scale.py
 pv.Scale.root
 pv.Simulation
 pv.Transform

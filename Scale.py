@@ -10,7 +10,7 @@ import Color
 class Scale(object):
     """Abstract base class for Scales"""
     def __init__(self):
-        pass
+        return self
     
     def interpolator(self,start,end):
         """Returns fn that interpolates between given values"""
@@ -36,7 +36,7 @@ class Scale(object):
         return _interp
     
     def by(self,f):
-        pass
+        raise NotImplementedError
 
 class quantitative(Scale):
     """Implement abstract quantitative scale."""
@@ -172,5 +172,58 @@ class log(quantitative):
     """Implementation of log scale"""
     def __init__(self, *args):
         quantitative.__init__(self,1,10)
-        self.arg = arg
+        self.domain(*args)
+        self.base(10)
+        return self
+    
+    def _log(self,x):
+        return math.log(x) / self._logbase
+    
+    def _pow(self,y):
+        return self._base ** y
+    
+    def ticks(self):
+        domain = self.domain()
+        negative = domain[0] < 0
+        i = math.floor( -self._log(-domain[0]) if negative else self._log(domain[0]) )
+        j = math.ceil( -self._log(-domain[1]) if negative else self._log(domain[1]) )
+        
+        ticks = []
+        if negative:
+            ticks.append(-self._pow(-i))
+            for i in range(i,j):
+                for k in range(self._base-1,0,-1):
+                    ticks.append(-self._pow(-(i+1))*k)
+        else:
+            for i in range(i,j):
+                for k in range(1,self._base):
+                    ticks.append(self._pow(i)*k)
+        
+        return ticks[ bisect.bisect_left(ticks,domain[0]) : bisect_right(ticks,domain[1]) ]
+    
+    def tickFormat(self,t):
+        return "%.1f"%t
+    
+    def nice(self):
+        domain = self.domain()
+        self.domain( pv.logFloor(domain[0],self._base), pv.logCeil(domain[1],self_base) )
+        return self
+    
+    def base(self,*args):
+        if len(args) == 0:
+            return self._base
+        else:
+            self._base = v
+            self._logbase = math.log(v)
+            self.transform(self._log,self._pow)
+            return self
+
+class ordinal(Scale):
+    """Implementation for ordinal scale"""
+    def __init__(self, *arg):
+        Scale.__init__(self)
+        self.domain(*args)
+        return self
+    
+    
         

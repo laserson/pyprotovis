@@ -1,5 +1,5 @@
 Array                       # Not necessary
-pv                          # Finished.  But pv-internals.js may have a couple more things
+pv                          # Adding as-needed.  But pv-internals.js may have a couple more things
 pv.Anchor
 pv.Area
 pv.Bar
@@ -69,11 +69,11 @@ pv.Quadtree
 pv.Quadtree.Node
 pv.Rule
 pv.Scale                    # Finished.  All below will also be in Scale.py
-pv.Scale.linear
-pv.Scale.log
-pv.Scale.ordinal
+pv.Scale.linear             # Finished
+pv.Scale.log                # Finished
+pv.Scale.ordinal            # In progress
 pv.Scale.quantile
-pv.Scale.quantitative       # started...in Scale.py
+pv.Scale.quantitative       # Finished
 pv.Scale.root
 pv.Simulation
 pv.Transform

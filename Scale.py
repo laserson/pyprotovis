@@ -220,10 +220,144 @@ class log(quantitative):
 
 class ordinal(Scale):
     """Implementation for ordinal scale"""
-    def __init__(self, *arg):
+    def __init__(self, *args):
         Scale.__init__(self)
+        self._domain = []
+        self._indices = {}
+        self._range = []
+        self._band = 0
         self.domain(*args)
         return self
     
+    def scale(self,x):
+        if x not in self._indices:
+            self._domain.append(x)
+            self._indices[x] = len(self._domain) - 1
+        return self._range[ self._indices[x] % len(self._range) ]
     
+    def domain(self,*args):
+        if len(args) == 0:
+            return self._domain
         
+        try:
+            iter(args[0])   # test for array type
+            array = args[0]
+            if len(args) > 1:
+                array = map(args[1],array)
+        except TypeError:
+            array = args
+        
+        self._domain = list(set(array))
+        self._indices = pv.numerate(self._domain)
+        
+        return self
+    
+    def range(self,*args):
+        if len(args) == 0:
+            return self._range
+        
+        try:
+            iter(args[0])   # test for array type
+            array = args[0]
+            if len(args) > 1:
+                array = map(args[1],array)
+        except TypeError:
+            array = args
+        
+        if isinstance(array[0],types.StringType):
+            array = map(pv.color,array)
+        
+        self._range = array
+        
+        return self
+    
+    def split(self,_min,_max):
+        step = float(_max - _min) / length(self.domain())
+        self._range = range(_min + step / 2., _max, step)
+        return self
+    
+    def splitFlush(self,_min,_max):
+        n = len(self.domain())
+        step = float(_max - _min) / (n - 1)
+        if n == 1:
+            self._range = (_min + _max) / 2.
+        else:
+            self._range = range(_min, _max + step / 2., step)
+        return self
+    
+    def splitBanded(self,_min,_max,band=1):
+        if band < 0:
+            n = len(self.domain())
+            total = -band * n
+            remaining = _max - _min - total
+            padding = remaining / float(n + 1)
+            self._range = range(_min + padding, _max, padding - band)
+            self._band = -band
+        else:
+            step = float(_max - _min) / (len(self.domain()) + (1 - band))
+            self._range = range(_min + step * (1 - band), _max, step)
+            self._band = step * band
+        return self
+    
+    def by(self,f):
+        raise NotImplementedError
+
+class quantile(Scale):
+    """quantile scale"""
+    
+    def __init__(self, *args):
+        Scale.__init__(self)
+        self._num_quantiles = -1
+        self._max_quantile_index = -1
+        self._quantile_boundaries = []
+        self._domain = []
+        self._y = linear()  # the range
+        self.domain(*args)
+        return self
+    
+    def scale(self,x):
+        return self._y(max(0, min(self._max_quantile_index, bisect.bisect_right(self._quantile_boundaries, x) - 1)) / float(self._max_quantile_index))
+    
+    def quantiles(self,*args):
+        if len(args) == 0:
+            return self._quantile_boundaries
+        
+        self._num_quantiles = int(args[0])
+        
+        if self._num_quantiles < 0:
+            self._quantile_boundaries = [self._domain[0]] + self._domain
+            self._max_quantile_index = len(self._domain) - 1
+        else:
+            self._quantile_boundaries = [self._domain[0]]
+            for i in range(1,self._num_quantiles+1):
+                self._quantile_boundaries.append( self._domain[ int(float(i) * (len(self._domain) - 1) / self._num_quantiles) ] )
+            self._max_quantile_index = self._num_quantiles - 1
+        
+        return self
+    
+    def domain(self,*args):
+        if len(args) == 0:
+            return self._domain
+        
+        try:
+            iter(args[0])
+            array = args[0]
+            if len(args) > 1:
+                array = map(args[1],array)
+        except TypeError:
+            array = args
+        
+        self._domain = array
+        self._domain.sort()
+        self.quantiles(self._num_quantiles)
+        return self
+    
+    def range(self,*args):
+        if len(args) == 0:
+            return self._y.range()
+        
+        self._y.range(*args)
+        return self
+    
+    def by(self,f):
+        raise NotImplementedError

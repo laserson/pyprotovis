@@ -71,8 +71,8 @@ pv.Rule
 pv.Scale                    # Finished.  All below will also be in Scale.py
 pv.Scale.linear             # Finished
 pv.Scale.log                # Finished
-pv.Scale.ordinal            # In progress
-pv.Scale.quantile
+pv.Scale.ordinal            # Finished
+pv.Scale.quantile           # Finished
 pv.Scale.quantitative       # Finished
 pv.Scale.root
 pv.Simulation
